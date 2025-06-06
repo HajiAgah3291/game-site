@@ -17,24 +17,43 @@
       height: 100vh;
     }
     h1 {
+      font-size: 2.5rem;
       margin-bottom: 20px;
+      text-align: center;
     }
-    a {
-      padding: 15px 30px;
-      background-color: #ff007f;
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
+    button {
+      padding: 12px 30px;
       font-size: 18px;
+      background-color: #ff007f;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
       transition: background 0.3s;
     }
-    a:hover {
+    button:hover {
       background-color: #cc0066;
+    }
+    iframe {
+      width: 100%;
+      height: 800px;
+      display: none;
+      border: none;
     }
   </style>
 </head>
 <body>
   <h1>Welcome to Games4Agahs 🎮</h1>
-  <a href="pong/index.html">Play Pong</a>
+  <button onclick="launchGame('pong')">Play Pong</button>
+
+  <iframe id="gameFrame"></iframe>
+
+  <script>
+    function launchGame(game) {
+      const frame = document.getElementById('gameFrame');
+      frame.style.display = 'block';
+      if (game === 'pong') frame.src = 'pong/index.html';
+    }
+  </script>
 </body>
 </html>
