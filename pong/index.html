@@ -1,119 +1,198 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pong</title>
+  <title>Basic Pong HTML Game</title>
+  <meta charset="UTF-8">
   <style>
-    body {
-      margin: 0;
-      background-color: #000;
-      color: white;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
 
-    canvas {
-      margin-top: 20px;
-      background: #111;
-      border: 2px solid #444;
-    }
-
-    .controls {
-      margin-top: 10px;
-    }
-
-    button {
-      margin: 5px;
-      padding: 10px 20px;
-      background-color: #ff007f;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    #score {
-      font-size: 1.5rem;
-      margin-top: 10px;
-    }
+  body {
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   </style>
 </head>
 <body>
-  <h1>Pong</h1>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
+<canvas width="750" height="585" id="game"></canvas>
+<script>
+const canvas = document.getElementById('game');
+const context = canvas.getContext('2d');
+const grid = 15;
+const paddleHeight = grid * 5; // 80
+const maxPaddleY = canvas.height - grid - paddleHeight;
 
-  <div class="controls">
-    <button onclick="togglePause()">⏸ Pause</button>
-    <button onclick="window.location.href='../index.html'">🔙 Back to Menu</button>
-  </div>
+var paddleSpeed = 6;
+var ballSpeed = 5;
 
-  <div id="score">0 : 0</div>
+const leftPaddle = {
+  // start in the middle of the game on the left side
+  x: grid * 2,
+  y: canvas.height / 2 - paddleHeight / 2,
+  width: grid,
+  height: paddleHeight,
 
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+  // paddle velocity
+  dy: 0
+};
+const rightPaddle = {
+  // start in the middle of the game on the right side
+  x: canvas.width - grid * 3,
+  y: canvas.height / 2 - paddleHeight / 2,
+  width: grid,
+  height: paddleHeight,
 
-    const WIDTH = canvas.width;
-    const HEIGHT = canvas.height;
-    const PADDLE_HEIGHT = 100;
-    const PADDLE_WIDTH = 10;
-    const BALL_SIZE = 10;
+  // paddle velocity
+  dy: 0
+};
+const ball = {
+  // start in the middle of the game
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  width: grid,
+  height: grid,
 
-    let leftPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2;
-    let rightPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2;
-    let ballX = WIDTH / 2;
-    let ballY = HEIGHT / 2;
-    let ballSpeedX = 5;
-    let ballSpeedY = 5;
-    let leftScore = 0;
-    let rightScore = 0;
-    let paused = false;
+  // keep track of when need to reset the ball position
+  resetting: false,
 
-    const keys = {};
+  // ball velocity (start going to the top-right corner)
+  dx: ballSpeed,
+  dy: -ballSpeed
+};
 
-    document.addEventListener("keydown", e => {
-      keys[e.key] = true;
-      if (e.key === "p") togglePause();
-    });
-    document.addEventListener("keyup", e => keys[e.key] = false);
+// check for collision between two objects using axis-aligned bounding box (AABB)
+// @see https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
+function collides(obj1, obj2) {
+  return obj1.x < obj2.x + obj2.width &&
+         obj1.x + obj1.width > obj2.x &&
+         obj1.y < obj2.y + obj2.height &&
+         obj1.y + obj1.height > obj2.y;
+}
 
-    canvas.addEventListener("touchmove", (e) => {
-      for (let t of e.touches) {
-        const rect = canvas.getBoundingClientRect();
-        const y = t.clientY - rect.top;
-        if (t.clientX < WIDTH / 2) leftPaddleY = y - PADDLE_HEIGHT / 2;
-        else rightPaddleY = y - PADDLE_HEIGHT / 2;
-      }
-      e.preventDefault();
-    }, { passive: false });
+// game loop
+function loop() {
+  requestAnimationFrame(loop);
+  context.clearRect(0,0,canvas.width,canvas.height);
 
-    function togglePause() {
-      paused = !paused;
-      if (!paused) requestAnimationFrame(loop);
-    }
+  // move paddles by their velocity
+  leftPaddle.y += leftPaddle.dy;
+  rightPaddle.y += rightPaddle.dy;
 
-    function draw() {
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  // prevent paddles from going through walls
+  if (leftPaddle.y < grid) {
+    leftPaddle.y = grid;
+  }
+  else if (leftPaddle.y > maxPaddleY) {
+    leftPaddle.y = maxPaddleY;
+  }
 
-      // Paddles
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(10, leftPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
-      ctx.fillRect(WIDTH - 20, rightPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
+  if (rightPaddle.y < grid) {
+    rightPaddle.y = grid;
+  }
+  else if (rightPaddle.y > maxPaddleY) {
+    rightPaddle.y = maxPaddleY;
+  }
 
-      // Ball
-      ctx.fillRect(ballX, ballY, BALL_SIZE, BALL_SIZE);
+  // draw paddles
+  context.fillStyle = 'white';
+  context.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
+  context.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
 
-      // Mid Line
-      ctx.fillRect(WIDTH / 2 - 1, 0, 2, HEIGHT);
+  // move ball by its velocity
+  ball.x += ball.dx;
+  ball.y += ball.dy;
 
-      // Score
-      document.getElementById("score").textContent = `${leftScore} : ${rightScore}`;
-    }
+  // prevent ball from going through walls by changing its velocity
+  if (ball.y < grid) {
+    ball.y = grid;
+    ball.dy *= -1;
+  }
+  else if (ball.y + grid > canvas.height - grid) {
+    ball.y = canvas.height - grid * 2;
+    ball.dy *= -1;
+  }
 
-    function update() {
-      if (keys["w"] && leftPaddleY > 0) leftPaddleY -= 8;
-      if (keys["s]()
+  // reset ball if it goes past paddle (but only if we haven't already done so)
+  if ( (ball.x < 0 || ball.x > canvas.width) && !ball.resetting) {
+    ball.resetting = true;
+
+    // give some time for the player to recover before launching the ball again
+    setTimeout(() => {
+      ball.resetting = false;
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+    }, 400);
+  }
+
+  // check to see if ball collides with paddle. if they do change x velocity
+  if (collides(ball, leftPaddle)) {
+    ball.dx *= -1;
+
+    // move ball next to the paddle otherwise the collision will happen again
+    // in the next frame
+    ball.x = leftPaddle.x + leftPaddle.width;
+  }
+  else if (collides(ball, rightPaddle)) {
+    ball.dx *= -1;
+
+    // move ball next to the paddle otherwise the collision will happen again
+    // in the next frame
+    ball.x = rightPaddle.x - ball.width;
+  }
+
+  // draw ball
+  context.fillRect(ball.x, ball.y, ball.width, ball.height);
+
+  // draw walls
+  context.fillStyle = 'lightgrey';
+  context.fillRect(0, 0, canvas.width, grid);
+  context.fillRect(0, canvas.height - grid, canvas.width, canvas.height);
+
+  // draw dotted line down the middle
+  for (let i = grid; i < canvas.height - grid; i += grid * 2) {
+    context.fillRect(canvas.width / 2 - grid / 2, i, grid, grid);
+  }
+}
+
+// listen to keyboard events to move the paddles
+document.addEventListener('keydown', function(e) {
+
+  // up arrow key
+  if (e.which === 38) {
+    rightPaddle.dy = -paddleSpeed;
+  }
+  // down arrow key
+  else if (e.which === 40) {
+    rightPaddle.dy = paddleSpeed;
+  }
+
+  // w key
+  if (e.which === 87) {
+    leftPaddle.dy = -paddleSpeed;
+  }
+  // a key
+  else if (e.which === 83) {
+    leftPaddle.dy = paddleSpeed;
+  }
+});
+
+// listen to keyboard events to stop the paddle if key is released
+document.addEventListener('keyup', function(e) {
+  if (e.which === 38 || e.which === 40) {
+    rightPaddle.dy = 0;
+  }
+
+  if (e.which === 83 || e.which === 87) {
+    leftPaddle.dy = 0;
+  }
+});
+
+// start the game
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
