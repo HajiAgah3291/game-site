@@ -40,7 +40,7 @@
       position: relative;
     }
 
-    #controls, #touch-controls {
+    #controls, #touch-controls, #difficulty-controls {
       margin-top: 10px;
       display: flex;
       justify-content: center;
@@ -49,7 +49,7 @@
       z-index: 2;
     }
 
-    button {
+    button, select {
       padding: 10px 20px;
       font-size: 16px;
       background-color: #ff007f;
@@ -77,6 +77,11 @@
       font-size: 24px;
       padding: 20px;
     }
+
+    label {
+      font-size: 16px;
+      margin-right: 5px;
+    }
   </style>
 </head>
 <body>
@@ -87,6 +92,15 @@
   <div id="controls">
     <button onclick="togglePause()">Pause</button>
     <button onclick="goToMenu()">Back to Menu</button>
+  </div>
+
+  <div id="difficulty-controls">
+    <label for="difficulty">Difficulty:</label>
+    <select id="difficulty" onchange="setDifficulty(this.value)">
+      <option value="easy">Easy</option>
+      <option value="medium" selected>Medium</option>
+      <option value="hard">Hard</option>
+    </select>
   </div>
 
   <div id="touch-controls">
@@ -147,14 +161,17 @@
     let leftScore = 0, rightScore = 0, paused = false;
 
     function collides(obj1, obj2) {
-      return obj1.x < obj2.x + obj2.width && obj1.x + obj1.width > obj2.x &&
-             obj1.y < obj2.y + obj2.height && obj1.y + obj1.height > obj2.y;
+      return obj1.x < obj2.x + obj2.width &&
+             obj1.x + obj1.width > obj2.x &&
+             obj1.y < obj2.y + obj2.height &&
+             obj1.y + obj1.height > obj2.y;
     }
 
     function resetBall() {
       ball.x = canvas.width / 2;
       ball.y = canvas.height / 2;
-      ball.dx *= -1;
+      ball.dx = Math.sign(ball.dx) * ballSpeed;
+      ball.dy = Math.sign(ball.dy) * ballSpeed;
     }
 
     function update() {
@@ -229,6 +246,22 @@
       if (side === 'right') rightPaddle.dy = 0;
     }
 
+    function setDifficulty(level) {
+      if (level === 'easy') {
+        paddleSpeed = 4;
+        ballSpeed = 4;
+      } else if (level === 'medium') {
+        paddleSpeed = 6;
+        ballSpeed = 5;
+      } else if (level === 'hard') {
+        paddleSpeed = 8;
+        ballSpeed = 7;
+      }
+      // Maintain direction
+      ball.dx = Math.sign(ball.dx) * ballSpeed;
+      ball.dy = Math.sign(ball.dy) * ballSpeed;
+    }
+
     document.addEventListener('keydown', e => {
       if (e.key === 'ArrowUp') rightPaddle.dy = -paddleSpeed;
       else if (e.key === 'ArrowDown') rightPaddle.dy = paddleSpeed;
@@ -242,8 +275,10 @@
       if (['w', 's'].includes(e.key.toLowerCase())) leftPaddle.dy = 0;
     });
 
+    setDifficulty('medium');
     updateScore();
     requestAnimationFrame(loop);
   </script>
 </body>
 </html>
+
