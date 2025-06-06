@@ -1,46 +1,119 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pong Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pong</title>
   <style>
     body {
       margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: sans-serif;
-      text-align: center;
-    }
-    canvas {
-      display: block;
-      margin: 0 auto;
-      background: #111;
-      touch-action: none;
-    }
-    #score {
-      margin-top: 10px;
-      font-size: 24px;
-    }
-    #pauseOverlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      display: none;
-      justify-content: center;
+      background-color: #000;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      background: rgba(0,0,0,0.6);
-      font-size: 40px;
+    }
+
+    canvas {
+      margin-top: 20px;
+      background: #111;
+      border: 2px solid #444;
+    }
+
+    .controls {
+      margin-top: 10px;
+    }
+
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      background-color: #ff007f;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #score {
+      font-size: 1.5rem;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <h1>Pong</h1>
   <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+  <div class="controls">
+    <button onclick="togglePause()">⏸ Pause</button>
+    <button onclick="window.location.href='../index.html'">🔙 Back to Menu</button>
+  </div>
+
   <div id="score">0 : 0</div>
-  <div id="pauseOverlay">Paused – Tap or Press P</div>
 
-  <script src="script.js"></script>
-</body>
-</html>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
+    const WIDTH = canvas.width;
+    const HEIGHT = canvas.height;
+    const PADDLE_HEIGHT = 100;
+    const PADDLE_WIDTH = 10;
+    const BALL_SIZE = 10;
+
+    let leftPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2;
+    let rightPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2;
+    let ballX = WIDTH / 2;
+    let ballY = HEIGHT / 2;
+    let ballSpeedX = 5;
+    let ballSpeedY = 5;
+    let leftScore = 0;
+    let rightScore = 0;
+    let paused = false;
+
+    const keys = {};
+
+    document.addEventListener("keydown", e => {
+      keys[e.key] = true;
+      if (e.key === "p") togglePause();
+    });
+    document.addEventListener("keyup", e => keys[e.key] = false);
+
+    canvas.addEventListener("touchmove", (e) => {
+      for (let t of e.touches) {
+        const rect = canvas.getBoundingClientRect();
+        const y = t.clientY - rect.top;
+        if (t.clientX < WIDTH / 2) leftPaddleY = y - PADDLE_HEIGHT / 2;
+        else rightPaddleY = y - PADDLE_HEIGHT / 2;
+      }
+      e.preventDefault();
+    }, { passive: false });
+
+    function togglePause() {
+      paused = !paused;
+      if (!paused) requestAnimationFrame(loop);
+    }
+
+    function draw() {
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+      // Paddles
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(10, leftPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
+      ctx.fillRect(WIDTH - 20, rightPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
+
+      // Ball
+      ctx.fillRect(ballX, ballY, BALL_SIZE, BALL_SIZE);
+
+      // Mid Line
+      ctx.fillRect(WIDTH / 2 - 1, 0, 2, HEIGHT);
+
+      // Score
+      document.getElementById("score").textContent = `${leftScore} : ${rightScore}`;
+    }
+
+    function update() {
+      if (keys["w"] && leftPaddleY > 0) leftPaddleY -= 8;
+      if (keys["s]()
