@@ -1,15 +1,40 @@
-<h1>Welcome to Games4agahs ✨</h1>
-
-<a href="#" onclick="launchGame('pong')">Play Pong</a>
-<a href="#" onclick="launchGame('snake')">Play Snake</a>
-
-<iframe id="gameFrame" width="800" height="600" style="display:none; margin-top: 30px; border: 2px solid #333; border-radius: 10px;"></iframe>
-
-<script>
-  function launchGame(game) {
-    const frame = document.getElementById('gameFrame');
-    frame.style.display = 'block';
-    if (game === 'pong') frame.src = 'pong/index.html';
-    else if (game === 'snake') frame.src = 'snake/index.html';
-  }
-</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Games4Agahs</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #0f0f0f;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    a {
+      padding: 15px 30px;
+      background-color: #ff007f;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 18px;
+      transition: background 0.3s;
+    }
+    a:hover {
+      background-color: #cc0066;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to Games4Agahs 🎮</h1>
+  <a href="pong/index.html">Play Pong</a>
+</body>
+</html>
