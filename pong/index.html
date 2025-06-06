@@ -11,29 +11,50 @@
       background-color: #0F0F0F;
       color: white;
       font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      overflow: hidden;
     }
 
     canvas {
       border: 2px solid #333;
-      background: #0F0F0F;
+      background: transparent;
       display: block;
+      margin: auto;
+      position: relative;
+      z-index: 1;
     }
 
-    #controls {
-      margin-top: 20px;
+    #matrix {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #score {
+      font-size: 20px;
+      text-align: center;
+      margin: 20px;
+      z-index: 2;
+      position: relative;
+    }
+
+    #controls, #touch-controls {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
     }
 
     button {
       padding: 10px 20px;
-      margin: 5px;
       font-size: 16px;
+      background-color: #ff007f;
       border: none;
       border-radius: 5px;
-      background-color: #ff007f;
       color: white;
       cursor: pointer;
     }
@@ -42,22 +63,74 @@
       background-color: #cc0066;
     }
 
-    #score {
-      font-size: 20px;
-      margin-bottom: 10px;
+    #touch-controls {
+      flex-wrap: wrap;
+    }
+
+    .touch-column {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .touch-column button {
+      margin: 5px;
+      font-size: 24px;
+      padding: 20px;
     }
   </style>
 </head>
 <body>
+  <canvas id="matrix"></canvas>
   <div id="score">0 : 0</div>
-  <canvas width="750" height="585" id="game"></canvas>
+  <canvas id="game" width="750" height="585"></canvas>
 
   <div id="controls">
     <button onclick="togglePause()">Pause</button>
     <button onclick="goToMenu()">Back to Menu</button>
   </div>
 
+  <div id="touch-controls">
+    <div class="touch-column">
+      <button ontouchstart="movePaddle('left', -1)" ontouchend="stopPaddle('left')">⬆️</button>
+      <button ontouchstart="movePaddle('left', 1)" ontouchend="stopPaddle('left')">⬇️</button>
+    </div>
+    <div class="touch-column">
+      <button ontouchstart="movePaddle('right', -1)" ontouchend="stopPaddle('right')">⬆️</button>
+      <button ontouchstart="movePaddle('right', 1)" ontouchend="stopPaddle('right')">⬇️</button>
+    </div>
+  </div>
+
   <script>
+    // Matrix background animation
+    const matrixCanvas = document.getElementById('matrix');
+    const ctx = matrixCanvas.getContext('2d');
+    matrixCanvas.width = window.innerWidth;
+    matrixCanvas.height = window.innerHeight;
+    const letters = 'アカサタナハマヤラワ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const fontSize = 16;
+    const columns = matrixCanvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+      ctx.fillStyle = '#0f0';
+      ctx.font = fontSize + 'px monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+
+      requestAnimationFrame(drawMatrix);
+    }
+    drawMatrix();
+
+    // Game logic
     const canvas = document.getElementById('game');
     const context = canvas.getContext('2d');
     const scoreDisplay = document.getElementById('score');
@@ -65,32 +138,17 @@
     const grid = 15;
     const paddleHeight = grid * 5;
     const maxPaddleY = canvas.height - grid - paddleHeight;
-
     let paddleSpeed = 6;
     let ballSpeed = 5;
 
     const leftPaddle = { x: grid * 2, y: canvas.height / 2 - paddleHeight / 2, width: grid, height: paddleHeight, dy: 0 };
     const rightPaddle = { x: canvas.width - grid * 3, y: canvas.height / 2 - paddleHeight / 2, width: grid, height: paddleHeight, dy: 0 };
-
-    const ball = {
-      x: canvas.width / 2,
-      y: canvas.height / 2,
-      width: grid,
-      height: grid,
-      dx: ballSpeed,
-      dy: -ballSpeed,
-      resetting: false
-    };
-
-    let leftScore = 0;
-    let rightScore = 0;
-    let paused = false;
+    const ball = { x: canvas.width / 2, y: canvas.height / 2, width: grid, height: grid, dx: ballSpeed, dy: -ballSpeed, resetting: false };
+    let leftScore = 0, rightScore = 0, paused = false;
 
     function collides(obj1, obj2) {
-      return obj1.x < obj2.x + obj2.width &&
-             obj1.x + obj1.width > obj2.x &&
-             obj1.y < obj2.y + obj2.height &&
-             obj1.y + obj1.height > obj2.y;
+      return obj1.x < obj2.x + obj2.width && obj1.x + obj1.width > obj2.x &&
+             obj1.y < obj2.y + obj2.height && obj1.y + obj1.height > obj2.y;
     }
 
     function resetBall() {
@@ -104,29 +162,19 @@
 
       leftPaddle.y += leftPaddle.dy;
       rightPaddle.y += rightPaddle.dy;
-
       leftPaddle.y = Math.max(grid, Math.min(maxPaddleY, leftPaddle.y));
       rightPaddle.y = Math.max(grid, Math.min(maxPaddleY, rightPaddle.y));
-
       ball.x += ball.dx;
       ball.y += ball.dy;
 
-      if (ball.y < grid || ball.y + grid > canvas.height - grid) {
-        ball.dy *= -1;
-      }
+      if (ball.y < grid || ball.y + grid > canvas.height - grid) ball.dy *= -1;
 
       if ((ball.x < 0 || ball.x > canvas.width) && !ball.resetting) {
         ball.resetting = true;
-
         if (ball.x < 0) rightScore++;
         else leftScore++;
-
         updateScore();
-
-        setTimeout(() => {
-          ball.resetting = false;
-          resetBall();
-        }, 500);
+        setTimeout(() => { ball.resetting = false; resetBall(); }, 500);
       }
 
       if (collides(ball, leftPaddle)) {
@@ -140,16 +188,13 @@
 
     function draw() {
       context.clearRect(0, 0, canvas.width, canvas.height);
-
       context.fillStyle = 'white';
       context.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
       context.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
       context.fillRect(ball.x, ball.y, ball.width, ball.height);
-
       context.fillStyle = 'grey';
       context.fillRect(0, 0, canvas.width, grid);
       context.fillRect(0, canvas.height - grid, canvas.width, grid);
-
       for (let i = grid; i < canvas.height - grid; i += grid * 2) {
         context.fillRect(canvas.width / 2 - grid / 2, i, grid, grid);
       }
@@ -173,6 +218,17 @@
       window.location.href = '../index.html';
     }
 
+    function movePaddle(side, direction) {
+      const speed = 6;
+      if (side === 'left') leftPaddle.dy = direction * speed;
+      if (side === 'right') rightPaddle.dy = direction * speed;
+    }
+
+    function stopPaddle(side) {
+      if (side === 'left') leftPaddle.dy = 0;
+      if (side === 'right') rightPaddle.dy = 0;
+    }
+
     document.addEventListener('keydown', e => {
       if (e.key === 'ArrowUp') rightPaddle.dy = -paddleSpeed;
       else if (e.key === 'ArrowDown') rightPaddle.dy = paddleSpeed;
@@ -186,27 +242,8 @@
       if (['w', 's'].includes(e.key.toLowerCase())) leftPaddle.dy = 0;
     });
 
-    // Start loop
     updateScore();
     requestAnimationFrame(loop);
   </script>
 </body>
 </html>
-<header>Welcome to Games4agahs ✨</header>
-<nav>
-  <a href="#" onclick="launchGame('pong')">Play Pong</a>
-  <a href="#" onclick="launchGame('snake')">Play Snake</a>
-</nav>
-
-<iframe id="gameFrame" width="800" height="600" style="display:none;"></iframe>
-
-<footer>Made by HajiAgah3291 © 2025</footer>
-
-<script>
-  function launchGame(game) {
-    const frame = document.getElementById('gameFrame');
-    frame.style.display = 'block';
-    if (game === 'pong') frame.src = 'pong/index.html';
-    else if (game === 'snake') frame.src = 'snake/index.html';
-  }
-</script>
