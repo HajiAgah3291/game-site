@@ -1,73 +1,46 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Games4agahs</title>
-  <link rel="icon" href="https://fav.farm/✨" />
+  <title>Pong Game</title>
   <style>
     body {
       margin: 0;
-      background-color: #0f0f0f;
-      color: white;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #111;
+      touch-action: none;
+    }
+    #score {
+      margin-top: 10px;
+      font-size: 24px;
+    }
+    #pauseOverlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: none;
+      justify-content: center;
       align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-    }
-    header {
-      padding: 20px;
-      font-size: 2rem;
-    }
-    nav a {
-      display: inline-block;
-      margin: 10px;
-      padding: 15px 30px;
-      background-color: #ff007f;
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      font-size: 18px;
-      transition: background 0.3s, transform 0.3s;
-    }
-    nav a:hover {
-      background-color: #cc0066;
-      transform: scale(1.05);
-    }
-    footer {
-      margin-top: 40px;
-      font-size: 14px;
-      color: #888;
-    }
-    iframe {
-      margin-top: 30px;
-      border: 2px solid #333;
-      border-radius: 10px;
+      background: rgba(0,0,0,0.6);
+      font-size: 40px;
     }
   </style>
 </head>
 <body>
-  <header>Welcome to Games4agahs ✨</header>
-  <nav>
-    <a href="#" onclick="launchGame('pong')">Play Pong</a>
-    <a href="#" onclick="launchGame('snake')">Play Snake</a>
-  </nav>
+  <h1>Pong</h1>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  <div id="score">0 : 0</div>
+  <div id="pauseOverlay">Paused – Tap or Press P</div>
 
-  <iframe id="gameFrame" width="800" height="600" style="display:none;"></iframe>
-
-  <footer>
-    Made by HajiAgah3291 © 2025
-  </footer>
-
-  <script>
-    function launchGame(game) {
-      const frame = document.getElementById('gameFrame');
-      frame.style.display = 'block';
-      if (game === 'pong') frame.src = 'pong/index.html';
-      else if (game === 'snake') frame.src = 'snake/index.html';
-    }
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
+
