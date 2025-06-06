@@ -57,6 +57,17 @@
       display: none;
       border: none;
     }
+
+    #difficulty-controls {
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    #difficulty-controls label,
+    #difficulty-controls select {
+      font-size: 16px;
+      margin: 0 5px;
+    }
   </style>
 </head>
 <body>
@@ -64,6 +75,16 @@
 
   <div class="main-container">
     <h1>Welcome to Games4Agahs 🎮</h1>
+
+    <div id="difficulty-controls">
+      <label for="difficulty">Difficulty:</label>
+      <select id="difficulty" onchange="setDifficulty(this.value)">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+    </div>
+
     <button onclick="launchGame('pong')">Play Pong</button>
     <iframe id="gameFrame"></iframe>
   </div>
@@ -74,6 +95,11 @@
       const frame = document.getElementById('gameFrame');
       frame.style.display = 'block';
       if (game === 'pong') frame.src = 'pong/index.html';
+    }
+
+    // Placeholder difficulty function — actual logic should go inside pong/index.html
+    function setDifficulty(level) {
+      localStorage.setItem('pongDifficulty', level); // Optional: Store for later use
     }
 
     // Matrix rain effect
@@ -117,3 +143,4 @@
   </script>
 </body>
 </html>
+
