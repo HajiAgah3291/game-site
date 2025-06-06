@@ -192,3 +192,21 @@
   </script>
 </body>
 </html>
+<header>Welcome to Games4agahs ✨</header>
+<nav>
+  <a href="#" onclick="launchGame('pong')">Play Pong</a>
+  <a href="#" onclick="launchGame('snake')">Play Snake</a>
+</nav>
+
+<iframe id="gameFrame" width="800" height="600" style="display:none;"></iframe>
+
+<footer>Made by HajiAgah3291 © 2025</footer>
+
+<script>
+  function launchGame(game) {
+    const frame = document.getElementById('gameFrame');
+    frame.style.display = 'block';
+    if (game === 'pong') frame.src = 'pong/index.html';
+    else if (game === 'snake') frame.src = 'snake/index.html';
+  }
+</script>
