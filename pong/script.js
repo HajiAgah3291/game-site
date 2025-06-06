@@ -7,7 +7,7 @@ const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
 
 const PADDLE_WIDTH = 10, PADDLE_HEIGHT = 100, BALL_SIZE = 15;
-const PADDLE_SPEED = 12;
+let paddleSpeed = 12;
 let ballSpeedX = 6, ballSpeedY = 5;
 
 let paused = false;
@@ -28,27 +28,30 @@ function togglePause() {
 function resetBall() {
   ballX = WIDTH / 2 - BALL_SIZE / 2;
   ballY = HEIGHT / 2 - BALL_SIZE / 2;
+  ballSpeedX = Math.sign(ballSpeedX) * Math.abs(ballSpeedX);
+  ballSpeedY = Math.sign(ballSpeedY) * Math.abs(ballSpeedY);
   ballSpeedX *= -1;
 }
 
 function update() {
   // Move paddles
-  if (keys['w'] && leftY > 0) leftY -= PADDLE_SPEED;
-  if (keys['s'] && leftY + PADDLE_HEIGHT < HEIGHT) leftY += PADDLE_SPEED;
-  if (keys['ArrowUp'] && rightY > 0) rightY -= PADDLE_SPEED;
-  if (keys['ArrowDown'] && rightY + PADDLE_HEIGHT < HEIGHT) rightY += PADDLE_SPEED;
+  if (keys['w'] && leftY > 0) leftY -= paddleSpeed;
+  if (keys['s'] && leftY + PADDLE_HEIGHT < HEIGHT) leftY += paddleSpeed;
+  if (keys['ArrowUp'] && rightY > 0) rightY -= paddleSpeed;
+  if (keys['ArrowDown'] && rightY + PADDLE_HEIGHT < HEIGHT) rightY += paddleSpeed;
 
-  // Ball physics
+  // Ball movement
   ballX += ballSpeedX;
   ballY += ballSpeedY;
 
+  // Wall collision
   if (ballY <= 0 || ballY + BALL_SIZE >= HEIGHT) ballSpeedY *= -1;
 
   // Paddle collision
   if (ballX <= 30 && ballY + BALL_SIZE >= leftY && ballY <= leftY + PADDLE_HEIGHT) ballSpeedX *= -1;
   if (ballX + BALL_SIZE >= WIDTH - 30 && ballY + BALL_SIZE >= rightY && ballY <= rightY + PADDLE_HEIGHT) ballSpeedX *= -1;
 
-  // Scoring
+  // Score
   if (ballX <= 0) { rightScore++; resetBall(); }
   if (ballX + BALL_SIZE >= WIDTH) { leftScore++; resetBall(); }
 
@@ -72,6 +75,23 @@ function gameLoop() {
     update();
     draw();
     requestAnimationFrame(gameLoop);
+  }
+}
+
+// DIFFICULTY SETTING FUNCTION
+function setDifficulty(level) {
+  if (level === 'easy') {
+    paddleSpeed = 4;
+    ballSpeedX = Math.sign(ballSpeedX) * 4;
+    ballSpeedY = Math.sign(ballSpeedY) * 4;
+  } else if (level === 'medium') {
+    paddleSpeed = 6;
+    ballSpeedX = Math.sign(ballSpeedX) * 5;
+    ballSpeedY = Math.sign(ballSpeedY) * 5;
+  } else if (level === 'hard') {
+    paddleSpeed = 8;
+    ballSpeedX = Math.sign(ballSpeedX) * 7;
+    ballSpeedY = Math.sign(ballSpeedY) * 7;
   }
 }
 
@@ -100,4 +120,6 @@ function handleTouch(e) {
   e.preventDefault();
 }
 
+// Set default difficulty on load
+setDifficulty('medium');
 gameLoop();
