@@ -1,6 +1,7 @@
 body {
   background-color: black;
   display: flex;
+  flex-direction: column; /* Needed so the dropdown isn't blocking the canvas */
   justify-content: center;
   align-items: center;
   height: 100vh;
@@ -10,4 +11,11 @@ body {
 canvas {
   background-color: #222;
   border: 2px solid white;
+}
+
+#difficulty-controls {
+  margin: 10px;
+  font-size: 16px;
+  z-index: 2;
+  position: relative;
 }
