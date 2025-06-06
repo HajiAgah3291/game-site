@@ -45,6 +45,7 @@
       color: white;
       cursor: pointer;
       transition: background 0.3s;
+      margin: 5px;
     }
 
     button:hover {
@@ -86,23 +87,23 @@
     </div>
 
     <button onclick="launchGame('pong')">Play Pong</button>
+    <button onclick="launchGame('flappy911')">Play Flappy Bird 9/11</button>
+
     <iframe id="gameFrame"></iframe>
   </div>
 
   <script>
-    // Launch selected game
     function launchGame(game) {
       const frame = document.getElementById('gameFrame');
       frame.style.display = 'block';
       if (game === 'pong') frame.src = 'pong/index.html';
+      else if (game === 'flappy911') frame.src = 'flappy911/index.html';
     }
 
-    // Placeholder difficulty function — actual logic should go inside pong/index.html
     function setDifficulty(level) {
-      localStorage.setItem('pongDifficulty', level); // Optional: Store for later use
+      localStorage.setItem('pongDifficulty', level);
     }
 
-    // Matrix rain effect
     const canvas = document.getElementById("matrix");
     const ctx = canvas.getContext("2d");
 
@@ -143,4 +144,3 @@
   </script>
 </body>
 </html>
-
