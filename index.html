@@ -8,29 +8,34 @@
     body {
       margin: 0;
       background-color: #0f0f0f;
-      color: white;
       font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    #matrix {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    .main-container {
+      position: relative;
+      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      overflow: hidden;
+      color: white;
+      text-align: center;
     }
-    #matrix {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      background-color: black;
-    }
+
     h1 {
       font-size: 2.5rem;
       margin-bottom: 20px;
-      text-align: center;
     }
+
     button {
       padding: 12px 30px;
       font-size: 18px;
@@ -41,9 +46,11 @@
       cursor: pointer;
       transition: background 0.3s;
     }
+
     button:hover {
       background-color: #cc0066;
     }
+
     iframe {
       width: 100%;
       height: 800px;
@@ -55,50 +62,55 @@
 <body>
   <canvas id="matrix"></canvas>
 
-  <h1>Welcome to Games4Agahs 🎮</h1>
-  <button onclick="launchGame('pong')">Play Pong</button>
-
-  <iframe id="gameFrame"></iframe>
+  <div class="main-container">
+    <h1>Welcome to Games4Agahs 🎮</h1>
+    <button onclick="launchGame('pong')">Play Pong</button>
+    <iframe id="gameFrame"></iframe>
+  </div>
 
   <script>
+    // Launch selected game
     function launchGame(game) {
       const frame = document.getElementById('gameFrame');
       frame.style.display = 'block';
       if (game === 'pong') frame.src = 'pong/index.html';
     }
 
-    // Matrix Rain Animation
-    const canvas = document.getElementById('matrix');
-    const ctx = canvas.getContext('2d');
+    // Matrix rain effect
+    const canvas = document.getElementById("matrix");
+    const ctx = canvas.getContext("2d");
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const letters = "アァイィウヴエエェオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモヤユヨラリルレロワヲンABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%";
+    const chars = "アァイィウヴエエェオカガキギクグケゲコゴサザシジスズセゼソゾABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%";
     const fontSize = 14;
     const columns = Math.floor(canvas.width / fontSize);
     const drops = Array(columns).fill(1);
 
-    function drawMatrix() {
+    function draw() {
       ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       ctx.fillStyle = "#0F0";
       ctx.font = fontSize + "px monospace";
 
       drops.forEach((y, i) => {
-        const text = letters.charAt(Math.floor(Math.random() * letters.length));
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
         const x = i * fontSize;
         ctx.fillText(text, x, y * fontSize);
 
         if (y * fontSize > canvas.height && Math.random() > 0.975) {
           drops[i] = 0;
         }
+
         drops[i]++;
       });
     }
 
-    setInterval(drawMatrix, 33);
+    setInterval(draw, 33);
 
-    window.addEventListener('resize', () => {
+    window.addEventListener("resize", () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     });
