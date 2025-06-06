@@ -2,143 +2,145 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Flappy Bird 9/11</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Games4Agahs</title>
   <style>
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
-      background: #0f0f0f;
+      background-color: #0f0f0f;
+      font-family: Arial, sans-serif;
       overflow: hidden;
     }
-    canvas {
-      display: block;
-      margin: auto;
-      background: linear-gradient(to bottom, #111, #333);
+
+    #matrix {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    .main-container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 30px;
+      font-size: 18px;
+      background-color: #ff007f;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin: 5px;
+    }
+
+    button:hover {
+      background-color: #cc0066;
+    }
+
+    iframe {
+      width: 100%;
+      height: 800px;
+      display: none;
+      border: none;
+    }
+
+    #difficulty-controls {
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    #difficulty-controls label,
+    #difficulty-controls select {
+      font-size: 16px;
+      margin: 0 5px;
     }
   </style>
 </head>
 <body>
-  <canvas id="game" width="400" height="600"></canvas>
+  <canvas id="matrix"></canvas>
+
+  <div class="main-container">
+    <h1>Welcome to Games4Agahs 🎮</h1>
+
+    <div id="difficulty-controls">
+      <label for="difficulty">Difficulty:</label>
+      <select id="difficulty" onchange="setDifficulty(this.value)">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+    </div>
+
+    <button onclick="launchGame('pong')">Play Pong</button>
+    <button onclick="launchGame('flappy911')">Play Flappy Bird 9/11</button>
+
+    <iframe id="gameFrame"></iframe>
+  </div>
+
   <script>
-    const canvas = document.getElementById("game");
+    function launchGame(game) {
+      const frame = document.getElementById('gameFrame');
+      frame.style.display = 'block';
+      if (game === 'pong') frame.src = 'pong/index.html';
+      else if (game === 'flappy911') frame.src = 'flappy911/index.html';
+    }
+
+    function setDifficulty(level) {
+      localStorage.setItem('pongDifficulty', level);
+    }
+
+    const canvas = document.getElementById("matrix");
     const ctx = canvas.getContext("2d");
 
-    let birdY = 250;
-    let birdVelocity = 0;
-    const gravity = 0.6;
-    const jump = -10;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    let pipes = [];
-    const pipeWidth = 50;
-    const pipeGap = 150;
-    const pipeSpeed = 2;
+    const chars = "アァイィウヴエエェオカガキギクグケゲコゴサザシジスズABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
+    const fontSize = 14;
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = Array(columns).fill(1);
 
-    let score = 0;
-    let gameOver = false;
-
-    function reset() {
-      birdY = 250;
-      birdVelocity = 0;
-      pipes = [];
-      score = 0;
-      gameOver = false;
-    }
-
-    function drawBird() {
-      ctx.fillStyle = "#fff";
-      ctx.beginPath();
-      ctx.arc(60, birdY, 15, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    function drawPipes() {
-      ctx.fillStyle = "#999";
-      pipes.forEach(pipe => {
-        ctx.fillRect(pipe.x, 0, pipeWidth, pipe.top);
-        ctx.fillRect(pipe.x, pipe.top + pipeGap, pipeWidth, canvas.height);
-      });
-    }
-
-    function updatePipes() {
-      if (pipes.length === 0 || pipes[pipes.length - 1].x < 200) {
-        const top = Math.random() * 200 + 50;
-        pipes.push({ x: canvas.width, top });
-      }
-
-      pipes.forEach(pipe => {
-        pipe.x -= pipeSpeed;
-
-        // Collision detection
-        if (
-          60 > pipe.x && 60 < pipe.x + pipeWidth &&
-          (birdY < pipe.top || birdY > pipe.top + pipeGap)
-        ) {
-          gameOver = true;
-        }
-
-        // Passed pipe
-        if (!pipe.passed && pipe.x + pipeWidth < 60) {
-          score++;
-          pipe.passed = true;
-        }
-      });
-
-      pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
-    }
-
-    function drawBackground() {
-      ctx.fillStyle = "#0f0f0f";
+    function draw() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw faint buildings
-      ctx.fillStyle = "#444";
-      for (let i = 0; i < 5; i++) {
-        const x = i * 100 + 20;
-        const h = 200 + Math.random() * 150;
-        ctx.fillRect(x, canvas.height - h, 60, h);
-      }
-    }
+      ctx.fillStyle = "#0F0";
+      ctx.font = fontSize + "px monospace";
 
-    function drawText() {
-      ctx.fillStyle = "#fff";
-      ctx.font = "24px Arial";
-      ctx.fillText("Score: " + score, 10, 30);
+      drops.forEach((y, i) => {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        const x = i * fontSize;
+        ctx.fillText(text, x, y * fontSize);
 
-      if (gameOver) {
-        ctx.fillText("Game Over - Click to Restart", 50, 300);
-      }
-    }
-
-    function gameLoop() {
-      drawBackground();
-      drawPipes();
-      drawBird();
-      drawText();
-
-      if (!gameOver) {
-        birdVelocity += gravity;
-        birdY += birdVelocity;
-        updatePipes();
-
-        if (birdY > canvas.height || birdY < 0) {
-          gameOver = true;
+        if (y * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
         }
 
-        requestAnimationFrame(gameLoop);
-      }
+        drops[i]++;
+      });
     }
 
-    canvas.addEventListener("click", () => {
-      if (gameOver) {
-        reset();
-        gameLoop();
-      } else {
-        birdVelocity = jump;
-      }
-    });
+    setInterval(draw, 33);
 
-    reset();
-    gameLoop();
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
   </script>
 </body>
 </html>
